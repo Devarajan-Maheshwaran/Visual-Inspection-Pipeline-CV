@@ -1,0 +1,27 @@
+services:
+  db:
+    image: postgres:18.6-alpine
+    environment:
+      POSTGRES_USER: inspection
+      POSTGRES_PASSWORD: inspection
+      POSTGRES_DB: inspection
+    volumes:
+      - inspection_postgres:/var/lib/postgresql
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U inspection -d inspection" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: .
+    environment:
+      DATABASE_URL: postgresql://inspection:inspection@db:5432/inspection
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  inspection_postgres:
